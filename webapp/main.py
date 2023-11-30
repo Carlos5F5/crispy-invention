@@ -1,5 +1,6 @@
 import os
 import base64
+import hashlib
 from typing import Union
 from os.path import dirname, abspath, join
 from fastapi import FastAPI
@@ -27,11 +28,24 @@ def root():
 @app.post('/generate')
 def generate(body: Body):
     """
-    Generate a pseudo-random token ID of twenty characters by default. Example POST request body:
-
     {
         "length": 20
     }
     """
     string = base64.b64encode(os.urandom(64))[:body.length].decode('utf-8')
     return {'token': string}
+
+
+class ChecksumBody(BaseModel):
+    text: str
+
+
+@app.post('/checksum')
+def checksum(body: ChecksumBody):
+    """
+    {
+        "text": "example"
+    }
+    """
+    checksum = hashlib.sha256(body.text.encode('utf-8')).hexdigest()
+    return {'checksum': checksum}
